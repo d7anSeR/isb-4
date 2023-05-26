@@ -1,13 +1,13 @@
 import matplotlib.pyplot as plt
 
 
-def create_stats(statistic: dict) -> plt.figure:
-    fig = plt.figure(figsize=(30, 5))
-    plt.ylabel("Time")
-    plt.xlabel("Number of processes")
-    plt.title("Dependence of execution time on the number of processes")
+def create_graph(statistic: dict, path_file: str) -> plt.figure:
+    """the function creates a time schedule for different pools"""
+    fig = plt.figure(figsize=(18, 9))
     x = statistic.keys()
     y = statistic.values()
-    plt.bar(x, y, color="blue", width=0.05)
-    plt.show(block = False)
-    return fig
+    plt.xlabel('Processes')
+    plt.ylabel('Time')
+    plt.title('Statistics')
+    plt.bar(x, y, color='blue', width=0.5)
+    plt.savefig(path_file)
