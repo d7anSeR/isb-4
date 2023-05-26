@@ -22,7 +22,7 @@ class MainWindow(QWidget):
 
     def initUI(self) -> None:
         """the method initializes the input values"""
-        self.setGeometry(100, 400, 1500, 200)
+        self.setGeometry(100, 100, 800, 200)
         self.setWindowTitle('Laboratory Work №4')
         self.flag_select_folder = False
         self.flag_find_num_card = False
