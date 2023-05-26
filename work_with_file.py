@@ -10,6 +10,7 @@ def write_file(path_file_name: str, data: str):
         logging.error(f"an error occurred when writing data to '{path_file_name}' file: {str(e)}")
         raise Exception("error")
     
+    
 def read_file(path_file_name: str):
     logging.basicConfig(level=logging.INFO, filename="py_log.log")
     try:
