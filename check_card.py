@@ -1,5 +1,3 @@
-from tqdm import tqdm
-
 import hashlib
 import multiprocessing as mp
 
@@ -23,8 +21,7 @@ def find_num_card(default_hash: str, bins: list, last_num: str, pool: int) -> in
         for elem in list_num:
             arg.append((default_hash, bin, elem, last_num))
     with mp.Pool(processes=pool) as p:
-        for result in p.starmap(check_num_card, tqdm(arg, colour="#008000",
-                                                     desc="The card number is searched by hash: ")):
+        for result in p.starmap(check_num_card, arg):
             if result:
                 p.terminate()
                 return result

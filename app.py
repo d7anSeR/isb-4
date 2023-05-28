@@ -7,7 +7,7 @@ from PyQt5.QtGui import QDoubleValidator
 import multiprocessing as mp
 
 from check_card import find_num_card
-from work_with_file import write_file, read_file, read_statistic, write_statistic
+from work_with_file import write_settings, read_settings, read_statistic, write_statistic
 from graph import create_graph
 from luhn import algorithm_luhn
 
@@ -28,15 +28,20 @@ class MainWindow(QWidget):
         self.flag_find_num_card = False
         self.flag_luhn = False
         self.flag_hist = False
-        self.dict_path = {
-            "path_bins": '\0',
-            "path_default_hash": '\0',
-            "path_num_card": '\0',
-            "path_last_number": '\0',
-            "path_processes": '\0',
-            "path_graph": '\0',
-            "path_check_luhn": '\0',
+        settings = {
+            'bins': ['519747', '537643', '548601', '548655',
+                     '552186', '555947', '514055',
+                     '531237', '558334', '541190', '545036',
+                     '547450', '555156'],
+            'default_hash':
+            'cb28fea647fab039e21aedf9762c895f6514d70ae404d5eac3c2b1da26547745',
+            'last_num': '5623',
+            'card_num': '',
+            'processes': '',
+            'res_luhn': '',
+            'graph': ''
         }
+        write_settings(settings, 'settings.json')
         layout = QVBoxLayout()
         self.setLayout(layout)
         tabs = QTabWidget()
@@ -52,19 +57,20 @@ class MainWindow(QWidget):
         if self.flag_select_folder and self.flag_find_num_card == False:
             pools = mp.cpu_count()
             result = 0
+            settings = read_settings('settings.json')
             for i in range(1, pools + 1):
                 start_time = time.time()
                 result = find_num_card(
-                    read_file(self.dict_path["path_default_hash"]),
-                    list(
-                        map(int, (read_file(self.dict_path["path_bins"])).split(" "))),
-                    read_file(self.dict_path["path_last_number"]), pools)
+                    settings['default_hash'],
+                    settings['bins'],
+                    settings['last_num'], pools)
                 final_time = time.time() - start_time
                 write_statistic(
-                    final_time, i, self.dict_path["path_processes"])
+                    final_time, i, settings['processes'])
             self.flag_find_num_card = True
-            write_file(self.dict_path["path_num_card"], result)
+            settings['card_num'] = result
             self.button_num_card.setStyleSheet("background-color : green")
+            write_settings(settings, 'settings.json')
         elif self.flag_select_folder == False:
             error = QMessageBox()
             error.setWindowTitle("Error")
@@ -83,15 +89,14 @@ class MainWindow(QWidget):
         path_tab1 = QWidget()
         layout = QVBoxLayout()
         layout_main = QHBoxLayout()
+        settings = read_settings('settings.json')
         layout.addWidget(QLabel("Bins for the card number:\n"))
+        for i in range(0, len(settings['bins'])):
+            layout.addWidget(QLabel(f"{i + 1}. {settings['bins'][i]}\n"))
         layout.addWidget(
-            QLabel("1. 5197 47\n2. 5376 43\n3. 5486 01\n4. 5486 55\n"))
+            QLabel("\n\n\nLast numbers of card: "))
         layout.addWidget(
-            QLabel("5. 5521 86\n6. 5551 56\n7. 5559 47\n8. 5140 55"))
-        layout.addWidget(
-            QLabel("\n9. 5312 37\n10. 5583 34\n11. 5411 90\n12. 5450 36\n13. 5474 50"))
-        layout.addWidget(
-            QLabel("\n\n\nLast numbers of card: 5623\n"))
+            QLabel(settings['last_num']))
         layout.addWidget(
             QLabel("\n\n\nSelect the path where you want to save all files\n"))
         file_browse = QPushButton('Browse')
@@ -135,8 +140,9 @@ class MainWindow(QWidget):
             error.exec_()
         else:
             self.flag_hist = True
+            settings = read_settings('settings.json')
             create_graph(read_statistic(
-                self.dict_path["path_processes"]), self.dict_path["path_graph"])
+                settings['processes']), settings['graph'])
             self.button_hist.setStyleSheet("background-color : green")
 
     def generation_graph(self) -> QWidget:
@@ -171,10 +177,11 @@ class MainWindow(QWidget):
             error.exec_()
         else:
             self.flag_luhn = True
-            result_algorithm = algorithm_luhn(
-                read_file(self.dict_path["path_num_card"]))
+            settings = read_settings('settings.json')
+            result_algorithm = algorithm_luhn(settings["card_num"])
             val_luhn = f"Algorithm Luhn return - {result_algorithm}"
-            write_file(self.dict_path["path_check_luhn"], val_luhn)
+            settings['res_luhn'] = val_luhn
+            write_settings(settings, 'settings.json')
             self.button_algorithm.setStyleSheet("background-color : green")
 
     def card_num_verification(self) -> QWidget:
@@ -195,16 +202,10 @@ class MainWindow(QWidget):
         """method for selecting the folder where 
         input and output data will be saved"""
         name = QFileDialog.getExistingDirectory(self)
-        self.dict_path["path_num_card"] = os.path.join(name, "card_num.txt")
-        self.dict_path["path_default_hash"] = os.path.join(
-            name, "default_hash.txt")
-        self.dict_path["path_bins"] = os.path.join(name, "bins.txt")
-        self.dict_path["path_last_number"] = os.path.join(
-            name, "last_number.txt")
-        self.dict_path["path_processes"] = os.path.join(name, "processes.csv")
-        self.dict_path["path_check_luhn"] = os.path.join(
-            name, "check_luhn.txt")
-        self.dict_path["path_graph"] = os.path.join(name, "graph.png")
+        settings = read_settings('settings.json')
+        settings['processes'] = os.path.join(name, "processes.csv")
+        settings['graph'] = os.path.join(name, "graph.jpg")
+        write_settings(settings, 'settings.json')
         self.flag_select_folder = True
         self.flag_luhn = False
         self.flag_find_num_card = False
@@ -213,10 +214,3 @@ class MainWindow(QWidget):
         self.button_num_card.setStyleSheet("background-color : white")
         self.button_algorithm.setStyleSheet("background-color : white")
         self.button_hist.setStyleSheet("background-color : white")
-        write_file(self.dict_path["path_default_hash"],
-                   "cb28fea647fab039e21aedf9762c895f6514d70ae404d5eac3c2b1da26547745")
-        write_file(self.dict_path["path_bins"], " ".join(["519747", "537643", "548601", "548655",
-                                                         "552186", "555947", "514055",
-                                                          "531237", "558334", "541190", "545036",
-                                                          "547450", "555156"]))
-        write_file(self.dict_path["path_last_number"], "5623")

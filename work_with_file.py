@@ -1,39 +1,35 @@
 import logging
+import json
 import csv
 
 
-def write_file(path_file_name: str, data: str) -> None:
-    """the function writes text data to a file"""
-    logging.basicConfig(level=logging.INFO, filename="py_log.log")
+def read_settings(settings: str) -> dict:
+    """the function reads values from settings.json"""
     try:
-        with open(path_file_name, "w") as f:
-            f.write(data)
+        with open(settings) as json_file:
+            settings = json.load(json_file)
         logging.info(
-            f"the data was successfully written to the file: {path_file_name}")
+            f"the data of settings successfully read")
     except Exception as e:
-        logging.error(
-            f"an error occurred when writing data to '{path_file_name}' file: {str(e)}")
-        raise Exception("error")
+        logging.warning(
+            f"an error occurred when reading data to '{settings}' file: {str(e)}")
+    return settings
 
 
-def read_file(path_file_name: str) -> str:
-    """the function reads text data from a file"""
-    logging.basicConfig(level=logging.INFO, filename="py_log.log")
+def write_settings(settings: dict, path_settings: str) -> None:
+    """the function writes values to settings.json"""
     try:
-        with open(path_file_name, "r") as f:
-            text = f.read()
+        with open(path_settings, 'w') as f:
+            json.dump(settings, f)
         logging.info(
-            f"the data was successfully read to the file: {path_file_name}")
-        return text
+            f"the data of settings successfully write")
     except Exception as e:
-        logging.error(
-            f"an error occurred when reading data to '{path_file_name}' file: {str(e)}")
-        raise Exception("error")
+        logging.warning(
+            f"an error occurred when writing data to '{settings}' file: {str(e)}")
 
 
 def read_statistic(path_file_name: str) -> dict:
     """the function reads data from a csv-file"""
-    logging.basicConfig(level=logging.INFO, filename="py_log.log")
     try:
         with open(path_file_name, 'r') as f:
             reader = csv.reader(f)
@@ -47,12 +43,10 @@ def read_statistic(path_file_name: str) -> dict:
     except Exception as e:
         logging.error(
             f"an error occurred when reading data to '{path_file_name}' file: {str(e)}")
-        raise Exception("error")
 
 
 def write_statistic(time: float, pool: int, path_file_name: str) -> None:
     """the function writes data to a csv-file"""
-    logging.basicConfig(level=logging.INFO, filename="py_log.log")
     try:
         with open(path_file_name, 'a', newline='') as f:
             writer = csv.writer(f)
@@ -60,4 +54,4 @@ def write_statistic(time: float, pool: int, path_file_name: str) -> None:
         logging.info("statistics successfully write")
     except Exception as e:
         logging.warning(
-            f"an error occurred when reading data to '{path_file_name}' file: {str(e)}")
+            f"an error occurred when writing data to '{path_file_name}' file: {str(e)}")
